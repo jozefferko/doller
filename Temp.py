@@ -81,11 +81,14 @@ def gen_statistics(data, wrk_table, gates, args):
 
 def _cvs_and_agg(data, wrk_table, gates, args):
     columns_1 = args[0]
-    columns_2 = args[0]
+    columns_2 = args[1]
     agg_cols = gates[1:]
     cvs = pd.DataFrame(_create_count_vs_expected_statistics(data, wrk_table, gates), columns=columns_1)
-    cvs.sort_values(by=['Job ID', 'StartDateTime'], ascending=True)
+    cvs['Median {} Pace'.format(gates[1])].replace(np.nan, 0, inplace=True)
+    cvs['Median {} Pace'.format(gates[2])].replace(np.nan, 0, inplace=True)
     agg = aggregated_count_vs_expected(cvs, agg_cols, columns_2)
+    agg.sort_values(by='Job ID', ascending=True, inplace=True)
+    agg.apply(lambda x: x.replace(np.nan, 0, inplace=True))
     return cvs, agg
 
 
@@ -113,7 +116,7 @@ def _create_count_vs_expected_statistics(data, wrk_table, gates):
                 stop,
                 count_1,
                 count_2, qty*6, median_pace_2, mean_pace_2,
-                count_3, qty, median_pace_3, mean_pace_3,
+                count_3, qty//2, median_pace_3, mean_pace_3,
                 wrk_table.at[i, 'Name']
             ]
             temp.append(output)
@@ -124,6 +127,16 @@ def aggregated_count_vs_expected(stats, agg_cols, columns_agg):
     grouped = _calc_ratio(stats, agg_cols[0])
     grouped = _calc_ratio(grouped, agg_cols[1])
 
+    median_1 = 'Median {} Pace'.format(agg_cols[0])
+    mean_1 = 'Mean {} Pace'.format(agg_cols[0])
+    median_2 = 'Median {} Pace'.format(agg_cols[1])
+    mean_2 = 'Mean {} Pace'.format(agg_cols[1])
+
+    grouped[median_1] = _calc_averages(stats, median_1)
+    grouped[mean_1] = _calc_averages(stats, mean_1)
+    grouped[median_2] = _calc_averages(stats, median_2)
+    grouped[mean_2] = _calc_averages(stats, mean_2)
+
     unique = stats.drop_duplicates(subset=['Job ID'])
     grouped.loc[:, 'Product'] = np.array(unique['Product'])
     grouped['StartDateTime'] = _add_times(stats, 'StartDateTime')
@@ -132,6 +145,20 @@ def aggregated_count_vs_expected(stats, agg_cols, columns_agg):
     grouped.reset_index(inplace=True)
     grouped = pd.DataFrame(grouped, columns=columns_agg)
     return grouped
+
+
+def _calc_averages(stats, column):
+    stats['Temp'] = np.where(stats[column] > 0, 1, 0)
+    return stats.groupby('Job ID').apply(lambda x: x[column].sum()/np.sum(x['Temp']))
+
+
+def _calc_ratio(stats, agg_col):
+    ratio = '{} Ratio'.format(agg_col)
+    expected = 'Expected {} Sum'.format(agg_col)
+    grouped_sum = stats.groupby(['Job ID']).sum()
+    grouped_sum[expected] = grouped_sum[expected].astype(np.int32)
+    grouped_sum[ratio] = grouped_sum['{} Sum'.format(agg_col)].astype('f') / grouped_sum[expected]
+    return grouped_sum
 
 
 def _add_times(stats, col):
@@ -147,15 +174,6 @@ def _create_shifted_lists(fragment, y):
     p = f.shift(1)
     p.fillna(y, inplace=True)
     return f, p
-
-
-def _calc_ratio(stats, agg_col):
-    ratio = '{} Ratio'.format(agg_col)
-    expected = 'Expected {} Sum'.format(agg_col)
-    grouped = stats.groupby(['Job ID']).sum()
-    grouped[expected] = grouped[expected].astype(np.int32)
-    grouped[ratio] = grouped['{} Sum'.format(agg_col)].astype('f') / grouped[expected]
-    return grouped
 
 
 def _remove_partial_overlaps(cvs):
@@ -200,5 +218,3 @@ def _gen_quantities(f, i):
     qty = f.at[i, 'Expected 0103 Sum']
     job = f.at[i, 'Job ID']
     return p_stop, start, stop, qty, job
-
-

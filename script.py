@@ -21,44 +21,69 @@ filtered = dc.filter_raw_work_table(
     '^CF|^SW'
 )
 
-gates = ['0101', '0102', '0103']
-columns_0 = ['Date', 'Indgang 0101', 'Indgang 0102', 'Indgang 0103', 'Indgang 0104', 'Indgang 0105', 'Indgang 0106', 'Non Duplicate 0101', 'Non Duplicate 0102', 'Non Duplicate 0103', '0102 Pace', '0103 Pace']
+gates = [
+    '0101',
+    '0102',
+    '0103'
+]
+
+columns_0 = [
+    'Date',
+    'Indgang 0101',
+    'Indgang 0102',
+    'Indgang 0103',
+    'Indgang 0104',
+    'Indgang 0105',
+    'Indgang 0106',
+    'Non Duplicate 0101',
+    'Non Duplicate 0102',
+    'Non Duplicate 0103',
+    '0102 Pace',
+    '0103 Pace'
+]
+
 columns_1 = [
-    'StartDateTime', 'StopDateTime', 'SysQtyGood', 'JobRef', 'Name']
+    'StartDateTime',
+    'StopDateTime',
+    'SysQtyGood',
+    'JobRef',
+    'Name'
+]
+
 columns_2 = [
     'Job ID',
-     'StartDateTime',
-     'StopDateTime',
-     '0101 Sum',
-     '0102 Sum',
-     'Expected 0102 Sum',
-     'Median 0102 Pace',
-     'Mean 0102 Pace',
-     '0103 Sum',
-     'Expected 0103 Sum',
-     'Median 0103 Pace',
-     'Mean 0103 Pace',
-     'Product'
-    ]
+    'StartDateTime',
+    'StopDateTime',
+    '0101 Sum',
+    '0102 Sum',
+    'Expected 0102 Sum',
+    'Median 0102 Pace',
+    'Mean 0102 Pace',
+    '0103 Sum',
+    'Expected 0103 Sum',
+    'Median 0103 Pace',
+    'Mean 0103 Pace',
+    'Product'
+]
 columns_3 = [
     'Job ID',
-     'StartDateTime',
-     'StopDateTime',
-     '0101 Sum',
-     '0102 Sum',
-     '0102 Ratio',
-     'Expected 0102 Sum',
-     'Median 0102 Pace',
-     'Mean 0102 Pace',
-     '0103 Sum',
-     '0103 Ratio',
-     'Expected 0103 Sum',
-     'Median 0103 Pace',
-     'Mean 0103 Pace',
-     'Product'
-    ]
+    'StartDateTime',
+    'StopDateTime',
+    '0101 Sum',
+    '0102 Sum',
+    'Expected 0102 Sum',
+    '0102 Ratio',
+    'Median 0102 Pace',
+    'Mean 0102 Pace',
+    '0103 Sum',
+    'Expected 0103 Sum',
+    '0103 Ratio',
+    'Median 0103 Pace',
+    'Mean 0103 Pace',
+    'Product'
+]
 
-columns_3 = ['Job ID', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio', '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
+# columns_3 = ['Job ID', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio', '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
 
 
 
