@@ -51,7 +51,7 @@ columns_1 = [
 ]
 
 columns_2 = [
-    'Job ID',
+    'JobRef',
     'StartDateTime',
     'StopDateTime',
     '0101 Sum',
@@ -66,7 +66,7 @@ columns_2 = [
     'Product'
 ]
 columns_3 = [
-    'Job ID',
+    'JobRef',
     'StartDateTime',
     'StopDateTime',
     '0101 Sum',
@@ -83,8 +83,7 @@ columns_3 = [
     'Product'
 ]
 
-# columns_3 = ['Job ID', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio', '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
-
+# columns_3 = ['JobRef', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio', '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
 
 
 clean_data = tp.assemble_data(orig_data, filtered, gates, columns_0)
@@ -94,7 +93,7 @@ cvs, agg = tp.gen_statistics(clean_data, filtered, gates, [columns_1, columns_2,
 # agg_2.sort_values('StartDateTime', inplace=True)
 
 # filtered, clean_data, cvs, agg, cvs_2, agg_2 = dc.generate_stats(clean_data, filtered, ['0103', '0102', '0101'])
-# cvs_2.sort_values(by=['Job ID', 'StartDateTime'], ascending=True)
+# cvs_2.sort_values(by=['JobRef', 'StartDateTime'], ascending=True)
 
 #
 # _, _, cvs, agg = dc.generate_stats(clean_data=orig_data, filtered=filtered, gates=['0103', '0102', '0101'], inplace=True)
@@ -194,7 +193,7 @@ def pace_since_error_data_0103(o_data, path):
     keys = ['JobRef']
     funcs = (_per_job_generic_calc_data, _per_episode_calc_deac_time_deltas)
     o = _calc_generic_data(o_data, _filtered_worktable(path), funcs, keys)
-    return pd.DataFrame(o, columns=['Start', 'End', 'Job ID', 'delta_0102', 'delta_0103'])
+    return pd.DataFrame(o, columns=['Start', 'End', 'JobRef', 'delta_0102', 'delta_0103'])
 
 
 

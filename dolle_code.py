@@ -238,7 +238,7 @@ def _non_duplicate_deac(fragment, args):
 
 def generate_stats(clean_data, filtered, args):
     cols = [
-        ['Job ID', 'Product', 'StartDateTime', 'StopDateTime', '{} Sum'.format(args[0]), 'Expected {} Sum'.format(args[0])],
+        ['JobRef', 'Product', 'StartDateTime', 'StopDateTime', '{} Sum'.format(args[0]), 'Expected {} Sum'.format(args[0])],
         ['StartDateTime', 'StopDateTime', '{} Sum'.format(args[1]), 'Expected {} Sum'.format(args[1])]
     ]
     cvs, agg = _gen_cvs_aggs(clean_data, filtered, args, cols)
@@ -252,7 +252,7 @@ def generate_stats(clean_data, filtered, args):
 def _gen_cvs_aggs(clean_data, filtered, gates, cols):
     cvs = _gen_cvs(clean_data, filtered, gates[0], cols[0])
     cvs = _merge_cvs(clean_data, filtered, cvs, gates[1], cols[1])
-    cvs.sort_values(by=['Job ID', 'StartDateTime'], ascending=True)
+    cvs.sort_values(by=['JobRef', 'StartDateTime'], ascending=True)
     agg = aggregated_count_vs_expected(cvs, gates)
     return cvs, agg
 
@@ -263,7 +263,7 @@ def _merge_cvs(clean_data, filtered, cvs, gate, cols):
     cvs = pd.merge(cvs, cvs_2, how='left', left_index=True, right_index=True)
     deacs = _gen_deacs(args=[clean_data, cvs])
     cvs['0101 Sum'] = deacs
-    columns = ['Job ID', 'StartDateTime', 'StopDateTime',
+    columns = ['JobRef', 'StartDateTime', 'StopDateTime',
                '0101 Sum', '0102 Sum', 'Expected 0102 Sum',
                '0103 Sum', 'Expected 0103 Sum', 'Product']
     return pd.DataFrame(cvs, columns=columns)
@@ -318,17 +318,17 @@ def _gen_quantities(f, i):
     start = f.at[i, 'StartDateTime']
     stop = f.at[i, 'StopDateTime']
     qty = f.at[i, 'Expected 0103 Sum']
-    job = f.at[i, 'Job ID']
+    job = f.at[i, 'JobRef']
     return p_stop, start, stop, qty, job
 
 
 def _merge_overlaps(cvs):
-    job_list = cvs[~cvs['Job ID'].duplicated(keep='first')]
+    job_list = cvs[~cvs['JobRef'].duplicated(keep='first')]
     chunks = []
     temp = []
     partial_overlap = []
     for i in job_list.index:
-        f = cvs[cvs['Job ID'] == job_list.at[i, 'Job ID']]
+        f = cvs[cvs['JobRef'] == job_list.at[i, 'JobRef']]
         f = f.reset_index(drop=True)
         for i in f.index:
             p_stop, start, stop, qty, job = _gen_quantities(f, i)
@@ -357,7 +357,7 @@ def _merge_overlaps(cvs):
 
 
 def aggregated_count_vs_expected(stats, agg_cols, path_out=None):
-    unique = stats.drop_duplicates(subset=['Job ID'])
+    unique = stats.drop_duplicates(subset=['JobRef'])
     grouped = _calc_ratio(stats, agg_cols[0])
     grouped = _calc_ratio(grouped, agg_cols[1])
 
@@ -367,7 +367,7 @@ def aggregated_count_vs_expected(stats, agg_cols, path_out=None):
     grouped = grouped.sort_values(by='StartDateTime')
     grouped.reset_index(inplace=True)
 
-    columns = ['Job ID', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio',
+    columns = ['JobRef', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio',
                '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
     grouped = pd.DataFrame(grouped, columns=columns)
     if path_out is not None:
@@ -378,14 +378,14 @@ def aggregated_count_vs_expected(stats, agg_cols, path_out=None):
 def _calc_ratio(stats, agg_col):
     ratio = '{} Ratio'.format(agg_col)
     expected = 'Expected {} Sum'.format(agg_col)
-    grouped = stats.groupby(['Job ID']).sum()
+    grouped = stats.groupby(['JobRef']).sum()
     grouped[expected] = grouped[expected].astype(np.int32)
     grouped[ratio] = grouped['{} Sum'.format(agg_col)].astype('f') / grouped[expected]
     return grouped
 
 
 def _add_times(stats, col):
-    time = stats[[col, 'Job ID']].groupby('Job ID')
+    time = stats[[col, 'JobRef']].groupby('JobRef')
     if col == 'StartDateTime':
         return time[col].min()
     else:
@@ -583,7 +583,7 @@ def pace_since_error_data_0103(o_data, path):
     keys = ['JobRef']
     funcs = (_per_job_generic_calc_data, _per_episode_calc_deac_time_deltas)
     o = _calc_generic_data(o_data, _filtered_worktable(path), funcs, keys)
-    return pd.DataFrame(o, columns=['Start', 'End', 'Job ID', 'delta_0102', 'delta_0103'])
+    return pd.DataFrame(o, columns=['Start', 'End', 'JobRef', 'delta_0102', 'delta_0103'])
 
 
 def per_episode_calc_error_data(data, col, off=False):

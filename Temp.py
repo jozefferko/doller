@@ -35,7 +35,6 @@ def _assemble_gate_counts(fragment, gates):
     fragment['Non Duplicate {}'.format(gates[0])] = _add_deac_counts(fragment, gates[0])
     fragment['Non Duplicate {}'.format(gates[1])] = _add_gate_counts(fragment, gates[1])
     fragment['{} Pace'.format(gates[1])][fragment['Non Duplicate {}'.format(gates[1])] == 1] = _add_gate_pace(fragment, gates[1])
-
     fragment['Non Duplicate {}'.format(gates[2])] = _add_gate_counts(fragment, gates[2], reduced=2)
     fragment['{} Pace'.format(gates[2])][fragment['Non Duplicate {}'.format(gates[2])] == 1] = _add_gate_pace(fragment, gates[2])
     return fragment
@@ -53,9 +52,7 @@ def _add_gate_counts(fragment, gate, reduced=None):
 def _add_gate_pace(fragment, gate):
     fragment = fragment.copy()
     t1 = fragment['Date'][fragment['Non Duplicate {}'.format(gate)] == 1]
-    t2 = t1.shift(1)
-    deltas = t1 - t2
-    deltas = deltas.dt.seconds
+    deltas = t1.sub(t1.shift(1)).dt.seconds
     deltas.replace(np.nan, 0, inplace=True)
     return deltas
 
@@ -86,9 +83,11 @@ def _cvs_and_agg(data, wrk_table, gates, args):
     cvs = pd.DataFrame(_create_count_vs_expected_statistics(data, wrk_table, gates), columns=columns_1)
     cvs['Median {} Pace'.format(gates[1])].replace(np.nan, 0, inplace=True)
     cvs['Median {} Pace'.format(gates[2])].replace(np.nan, 0, inplace=True)
+    cvs.sort_values(by=['JobRef', 'StartDateTime'], ascending=[True, True], inplace=True)
     agg = aggregated_count_vs_expected(cvs, agg_cols, columns_2)
-    agg.sort_values(by='Job ID', ascending=True, inplace=True)
+    agg.sort_values(by='JobRef', ascending=True, inplace=True)
     agg.apply(lambda x: x.replace(np.nan, 0, inplace=True))
+    agg.reset_index(drop=True, inplace=True)
     return cvs, agg
 
 
@@ -101,11 +100,13 @@ def _create_count_vs_expected_statistics(data, wrk_table, gates):
             count_2 = np.sum(fragment['Non Duplicate {}'.format(gates[1])])
             count_3 = np.sum(fragment['Non Duplicate {}'.format(gates[2])])
 
-            no_zeroes_2 = fragment['{} Pace'.format(gates[1])][fragment['{} Pace'.format(gates[1])] != 0]
+            pace_2 = '{} Pace'.format(gates[1])
+            no_zeroes_2 = fragment[pace_2][fragment[pace_2] != 0]
             median_pace_2 = np.median(no_zeroes_2)
-            mean_pace_2 = np.mean(fragment['{} Pace'.format(gates[1])])
+            mean_pace_2 = np.mean(fragment[pace_2])
 
-            no_zeroes_3 = fragment['{} Pace'.format(gates[2])][fragment['{} Pace'.format(gates[2])] != 0]
+            pace_3 = '{} Pace'.format(gates[2])
+            no_zeroes_3 = fragment[pace_3][fragment[pace_3] != 0]
             median_pace_3 = np.median(no_zeroes_3)
             mean_pace_3 = np.mean(no_zeroes_3)
 
@@ -137,7 +138,7 @@ def aggregated_count_vs_expected(stats, agg_cols, columns_agg):
     grouped[median_2] = _calc_averages(stats, median_2)
     grouped[mean_2] = _calc_averages(stats, mean_2)
 
-    unique = stats.drop_duplicates(subset=['Job ID'])
+    unique = stats.drop_duplicates(subset=['JobRef'])
     grouped.loc[:, 'Product'] = np.array(unique['Product'])
     grouped['StartDateTime'] = _add_times(stats, 'StartDateTime')
     grouped['StopDateTime'] = _add_times(stats, 'StopDateTime')
@@ -149,20 +150,20 @@ def aggregated_count_vs_expected(stats, agg_cols, columns_agg):
 
 def _calc_averages(stats, column):
     stats['Temp'] = np.where(stats[column] > 0, 1, 0)
-    return stats.groupby('Job ID').apply(lambda x: x[column].sum()/np.sum(x['Temp']))
+    return stats.groupby('JobRef').apply(lambda x: x[column].sum()/np.sum(x['Temp']))
 
 
 def _calc_ratio(stats, agg_col):
     ratio = '{} Ratio'.format(agg_col)
     expected = 'Expected {} Sum'.format(agg_col)
-    grouped_sum = stats.groupby(['Job ID']).sum()
+    grouped_sum = stats.groupby(['JobRef']).sum()
     grouped_sum[expected] = grouped_sum[expected].astype(np.int32)
     grouped_sum[ratio] = grouped_sum['{} Sum'.format(agg_col)].astype('f') / grouped_sum[expected]
     return grouped_sum
 
 
 def _add_times(stats, col):
-    time = stats[[col, 'Job ID']].groupby('Job ID')
+    time = stats[[col, 'JobRef']].groupby('JobRef')
     if col == 'StartDateTime':
         return time[col].min()
     else:
@@ -177,12 +178,12 @@ def _create_shifted_lists(fragment, y):
 
 
 def _remove_partial_overlaps(cvs):
-    job_list = cvs[~cvs['Job ID'].duplicated(keep='first')]
+    job_list = cvs[~cvs['JobRef'].duplicated(keep='first')]
     chunks = []
     temp = []
     partial_overlap = []
     for i in job_list.index:
-        f = cvs[cvs['Job ID'] == job_list.at[i, 'Job ID']]
+        f = cvs[cvs['JobRef'] == job_list.at[i, 'JobRef']]
         f = f.reset_index(drop=True)
         for i in f.index:
             p_stop, start, stop, qty, job = _gen_quantities(f, i)
@@ -216,5 +217,5 @@ def _gen_quantities(f, i):
     start = f.at[i, 'StartDateTime']
     stop = f.at[i, 'StopDateTime']
     qty = f.at[i, 'Expected 0103 Sum']
-    job = f.at[i, 'Job ID']
+    job = f.at[i, 'JobRef']
     return p_stop, start, stop, qty, job
