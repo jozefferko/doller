@@ -12,7 +12,7 @@ import re
 """
 
 
-def clean_csv(path_in, path_out, output, sep=';'):
+def clean_csv(path_in, path_out, output=False):
     """
 
     :param path_in:
@@ -22,17 +22,15 @@ def clean_csv(path_in, path_out, output, sep=';'):
     :return:
     """
     try:
-        data = pd.read_csv(path_in, sep)
+        data = pd.read_csv(path_in, sep=';')
         if 'Indgang 0101' in data.columns:
             try:
                 data = read_ladder_one(path_in)
                 data.sort_values(by='Date', inplace=True)
                 data.reset_index(inplace=True, drop=True)
-                if output:
-                    data.to_csv(path_out, sep=sep, index_label=False)
-                return data
             except:
                 pass
+            return data
         else:
             pass
 
@@ -75,9 +73,7 @@ def _read(path, drop_list, prefix):
 #     return work_table
 
 
-def filter_raw_work_table(path_wrk, path_prod, machine_id, reg_ex):
-    prod_table = pd.read_csv(path_prod, sep=';', encoding="ISO-8859-1")
-    work_table = pd.read_csv(path_wrk, sep=';')
+def filter_raw_work_table(work_table, prod_table, machine_id, reg_ex):
     work_table['SysQtyGood'] = convert_to_float(work_table['SysQtyGood'])
     work_table['StartDateTime'] = work_table['StartDate'] + ' ' + work_table['StartTime']
     work_table['StopDateTime'] = work_table['StopDate'] + ' ' + work_table['StopTime']
