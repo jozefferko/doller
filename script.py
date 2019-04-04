@@ -93,6 +93,7 @@ columns_3 = [
 clean_data = tp.assemble_data(orig_data, filtered, gates, columns_0)
 clean_data = pd.DataFrame(clean_data, columns=columns_0)
 cvs, agg = tp.gen_statistics(clean_data, filtered, gates, [columns_1, columns_2, columns_3])
+cvs.drop('Temp', axis=1, inplace=True)
 
 cols = agg['Product'].str.split(':', expand=True)
 agg.drop('Product', axis=1, inplace=True)
@@ -101,7 +102,6 @@ cols_5[0] = cols_5[0].apply(lambda x: x.lstrip().rstrip())
 cols_5[1] = cols_5[1].apply(lambda x: x.lstrip().rstrip())
 cols_5[2] = cols_5[2].apply(lambda x: x.lstrip().rstrip())
 cols_5[3] = cols_5[3].apply(lambda x: x.lstrip().rstrip())
-
 
 cols_5['Drilling Pattern'] = cols[0].apply(lambda x: x[:2])
 cols_5['Product'] = cols[5]

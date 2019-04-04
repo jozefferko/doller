@@ -30,13 +30,19 @@ def assemble_data(data, work_table, gates, columns):
 
 def _assemble_gate_counts(fragment, gates):
     gates = gates[0]
-    fragment['{} Pace'.format(gates[1])] = 0
-    fragment['{} Pace'.format(gates[2])] = 0
-    fragment['Non Duplicate {}'.format(gates[0])] = _add_deac_counts(fragment, gates[0])
-    fragment['Non Duplicate {}'.format(gates[1])] = _add_gate_counts(fragment, gates[1])
-    fragment['{} Pace'.format(gates[1])][fragment['Non Duplicate {}'.format(gates[1])] == 1] = _add_gate_pace(fragment, gates[1])
-    fragment['Non Duplicate {}'.format(gates[2])] = _add_gate_counts(fragment, gates[2], reduced=2)
-    fragment['{} Pace'.format(gates[2])][fragment['Non Duplicate {}'.format(gates[2])] == 1] = _add_gate_pace(fragment, gates[2])
+    non_duplicate_1 = 'Non Duplicate {}'.format(gates[0])
+    non_duplicate_2 = 'Non Duplicate {}'.format(gates[1])
+    non_duplicate_3 = 'Non Duplicate {}'.format(gates[2])
+    pace_2 = '{} Pace'.format(gates[1])
+    pace_3 = '{} Pace'.format(gates[2])
+    fragment[pace_2] = 0
+    fragment[pace_3] = 0
+    fragment[non_duplicate_1] = _add_deac_counts(fragment, gates[0])
+    fragment[non_duplicate_2] = _add_gate_counts(fragment, gates[1])
+    fragment[non_duplicate_3] = _add_gate_counts(fragment, gates[2], reduced=2)
+
+    fragment.loc[fragment[non_duplicate_2] == 1, pace_2] = _add_gate_pace(fragment, gates[1])
+    fragment.loc[fragment[non_duplicate_3] == 1, pace_3] = _add_gate_pace(fragment, gates[2])
     return fragment
 
 
