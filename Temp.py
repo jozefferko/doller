@@ -144,7 +144,7 @@ def aggregated_count_vs_expected(stats, agg_cols, columns_agg):
     grouped['StopDateTime'] = _add_times(stats, 'StopDateTime')
     grouped = grouped.sort_values(by='StartDateTime')
     grouped.reset_index(inplace=True)
-    grouped = pd.DataFrame(grouped, columns=columns_agg)
+    grouped = pd.DataFrame(grouped)
     return grouped
 
 

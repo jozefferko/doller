@@ -80,7 +80,15 @@ columns_3 = [
     '0103 Ratio',
     'Median 0103 Pace',
     'Mean 0103 Pace',
-    'Product'
+    'Product',
+    'Drilling Pattern',
+    'Machine',
+    'No. Sections',
+    'String Size',
+    'String Wood',
+    'Tread Size',
+    'Tread Wood',
+    'No. Sections'
 ]
 
 # columns_3 = ['JobRef', 'StartDateTime', 'StopDateTime', '0101 Sum', '0102 Sum', 'Expected 0102 Sum', '0102 Ratio', '0103 Sum', 'Expected 0103 Sum', '0103 Ratio', 'Product']
@@ -89,6 +97,29 @@ columns_3 = [
 clean_data = tp.assemble_data(orig_data, filtered, gates, columns_0)
 clean_data = pd.DataFrame(clean_data, columns=columns_0)
 cvs, agg = tp.gen_statistics(clean_data, filtered, gates, [columns_1, columns_2, columns_3])
+
+cols = agg['Product'].str.split(':', expand=True)
+agg.loc[:, 'Product'] = cols[5]
+cols_5 = cols.iloc[:, 5].str.split('/', expand=True)
+cols_5[0] = cols_5[0].apply(lambda x: x.lstrip().rstrip())
+cols_5[1] = cols_5[1].apply(lambda x: x.lstrip().rstrip())
+cols_5[2] = cols_5[2].apply(lambda x: x.lstrip().rstrip())
+cols_5[3] = cols_5[3].apply(lambda x: x.lstrip().rstrip())
+
+
+cols_5['Drilling Pattern'] = cols[0].apply(lambda x: x[:2])
+cols_5['Machine'] = cols_5[0].apply(lambda x: x[:1])
+# cols_5[6] = cols_5[0].apply(lambda x: x[1:])
+cols_5['String Size'] = cols_5[1].apply(lambda x: x[:1])
+cols_5['String Wood'] = cols_5[1].apply(lambda x: x[1:])
+cols_5['Tread Size'] = cols_5[2].apply(lambda x: x[:1])
+cols_5['Tread Wood'] = cols_5[2].apply(lambda x: x[1:])
+cols_5['No. Sections'] = cols_5[3].apply(lambda x: x[:-1])
+cols_5 = cols_5.iloc[:, 4:]
+agg = agg.merge(right=cols_5, left_index=True, right_index=True)
+agg = pd.DataFrame(agg, columns=columns_3)
+
+
 # cvs_2.sort_values('StartDateTime', inplace=True)
 # agg_2.sort_values('StartDateTime', inplace=True)
 
