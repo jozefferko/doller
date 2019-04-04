@@ -118,10 +118,10 @@ def _create_count_vs_expected_statistics(data, wrk_table, gates):
 
             init_median_pace_2 = 0
             init_mean_pace_2 = 0
-            no_zeroes_in = fragment['Non Duplicate {}'.format(gates[1])][fragment['Non Duplicate {}'.format(gates[1])]!=0]
+            no_zeroes_in = fragment['Non Duplicate {}'.format(gates[1])][fragment['Non Duplicate {}'.format(gates[1])] != 0]
             if not no_zeroes_in.empty:
                 corrected_slice = fragment.loc[no_zeroes_in.index[0]:]
-                no_zeroes_out = corrected_slice['Non Duplicate {}'.format(gates[2])][fragment['Non Duplicate {}'.format(gates[2])]!=0]
+                no_zeroes_out = corrected_slice['Non Duplicate {}'.format(gates[2])][fragment['Non Duplicate {}'.format(gates[2])] != 0]
                 if not no_zeroes_out.empty:
                     #init_pace = fragment.loc[no_zeroes_in.index[0]]['Date']-fragment.loc[no_zeroes_out.index[0]]['Date']
                     corrected_slice = corrected_slice.loc[:no_zeroes_out.index[0]]
