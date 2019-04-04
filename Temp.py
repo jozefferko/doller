@@ -110,13 +110,25 @@ def _create_count_vs_expected_statistics(data, wrk_table, gates):
             median_pace_3 = np.median(no_zeroes_3)
             mean_pace_3 = np.mean(no_zeroes_3)
 
+            init_median_pace_2 = 0
+            init_mean_pace_2 = 0
+            no_zeroes_in = fragment['Non Duplicate {}'.format(gates[1])][fragment['Non Duplicate {}'.format(gates[1])]!=0]
+            if not no_zeroes_in.empty:
+                corrected_slice = fragment.loc[no_zeroes_in.index[0]:]
+                no_zeroes_out = corrected_slice['Non Duplicate {}'.format(gates[2])][fragment['Non Duplicate {}'.format(gates[2])]!=0]
+                if not no_zeroes_out.empty:
+                    #init_pace = fragment.loc[no_zeroes_in.index[0]]['Date']-fragment.loc[no_zeroes_out.index[0]]['Date']
+                    corrected_slice = corrected_slice.loc[:no_zeroes_out.index[0]]
+                    init_no_zeroes_2 = corrected_slice['{} Pace'.format(gates[1])][corrected_slice['{} Pace'.format(gates[1])] != 0]
+                    init_median_pace_2 = np.median(init_no_zeroes_2)
+                    init_mean_pace_2 = np.mean(init_no_zeroes_2)
             qty = wrk_table.at[i, 'SysQtyGood'].astype(np.int32)
             output = [
                 wrk_table.at[i, 'JobRef'],
                 start,
                 stop,
                 count_1,
-                count_2, qty*6, median_pace_2, mean_pace_2,
+                count_2, qty*6,init_median_pace_2, median_pace_2, init_mean_pace_2,mean_pace_2,
                 count_3, qty//2, median_pace_3, mean_pace_3,
                 wrk_table.at[i, 'Name']
             ]

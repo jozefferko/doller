@@ -3,14 +3,15 @@ import pandas as pd
 import numpy as np
 import Temp as tp
 
-base = r'C:\Users\1067332\Desktop\Dolle\Data'
+
+base = r'/Users/jozefferko/PycharmProjects/doll'
 orig_data = dc.clean_csv(
-    base + r'\Ladder Machine 1\Orig Data\Ladder machine 1.csv',
-    base + r'\Ladder Machine 1\output.csv',
+    base + r'/Ladder-machine-1.csv',
+    base + r'/output.csv',
     True
 )
-product_path = base + r'\ProdTable.csv'
-work_path = base + r'\JmgStampTrans.csv'
+product_path = base + r'/ProdTable.csv'
+work_path = base + r'/JmgStampTrans.csv'
 
 prod_table = pd.read_csv(product_path, sep=';', encoding="ISO-8859-1")
 work_table = pd.read_csv(work_path, sep=';')
@@ -57,7 +58,9 @@ columns_2 = [
     '0101 Sum',
     '0102 Sum',
     'Expected 0102 Sum',
+    'Median 0102 Init Pace',
     'Median 0102 Pace',
+    'Mean 0102 Init Pace',
     'Mean 0102 Pace',
     '0103 Sum',
     'Expected 0103 Sum',
@@ -73,7 +76,9 @@ columns_3 = [
     '0102 Sum',
     'Expected 0102 Sum',
     '0102 Ratio',
+    'Median 0102 Init Pace',
     'Median 0102 Pace',
+    'Mean 0102 Init Pace',
     'Mean 0102 Pace',
     '0103 Sum',
     'Expected 0103 Sum',
@@ -122,7 +127,7 @@ agg = pd.DataFrame(agg, columns=columns_3)
 
 # cvs_2.sort_values('StartDateTime', inplace=True)
 # agg_2.sort_values('StartDateTime', inplace=True)
-
+print('ayy')
 # filtered, clean_data, cvs, agg, cvs_2, agg_2 = dc.generate_stats(clean_data, filtered, ['0103', '0102', '0101'])
 # cvs_2.sort_values(by=['JobRef', 'StartDateTime'], ascending=True)
 
