@@ -128,13 +128,40 @@ def _create_count_vs_expected_statistics(data, wrk_table, gates):
                     init_no_zeroes_2 = corrected_slice['{} Pace'.format(gates[1])][corrected_slice['{} Pace'.format(gates[1])] != 0]
                     init_median_pace_2 = np.median(init_no_zeroes_2)
                     init_mean_pace_2 = np.mean(init_no_zeroes_2)
+
+            total_time = stop - start
+
+            alarm_1_sum = fragment.apply(lambda x:
+                                     x['Indgang 0104'].shift(-1) - x['Indgang 0104']
+                                     if x['Indgang 0104'] == 1 and x['Indgang 0104'].shift(-1) == 1
+                                     or x['Indgang 0104'] == 1 and x['Indgang 0104'].shift(-1) == 0
+                                     else 0, axis=0).sum()
+
+            alarm_1_percent = alarm_1_sum / total_time
+
+            alarm_2_sum = fragment.apply(lambda x:
+                                     x['Indgang 0105'].shift(-1) - x['Indgang 0105']
+                                     if x['Indgang 0105'] == 1 and x['Indgang 0105'].shift(-1) == 1
+                                     or x['Indgang 0105'] == 1 and x['Indgang 0105'].shift(-1) == 0
+                                     else 0, axis=0).sum()
+
+            alarm_2_percent = alarm_2_sum / total_time
+
+            alarm_3_sum = fragment.apply(lambda x:
+                                     x['Indgang 0106'].shift(-1) - x['Indgang 0106']
+                                     if x['Indgang 0106'] == 1 and x['Indgang 0106'].shift(-1) == 1
+                                     or x['Indgang 0106'] == 1 and x['Indgang 0106'].shift(-1) == 0
+                                     else 0).sum()
+
+            alarm_3_percent = alarm_3_sum / total_time
+
             qty = wrk_table.at[i, 'SysQtyGood'].astype(np.int32)
             output = [
                 wrk_table.at[i, 'JobRef'],
                 start,
                 stop,
                 count_1,
-                count_2, qty*6,init_median_pace_2, median_pace_2, init_mean_pace_2,mean_pace_2,
+                count_2, qty*6,init_median_pace_2, median_pace_2, init_mean_pace_2, mean_pace_2,
                 count_3, qty//2, median_pace_3, mean_pace_3,
                 wrk_table.at[i, 'Name']
             ]
